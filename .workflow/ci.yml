@@ -1,0 +1,43 @@
+# ==============================================================================
+# Gitee Go 自动化构建与代码质量校验流水线 (CI)
+# 
+# 职责说明：
+# 1. 监听 main 分支的 push 与 pull_request 事件。
+# 2. 基于 Node.js 22 初始化运行环境并配置 npmmirror 镜像源加速下载。
+# 3. 执行语法健全性检查 (check:syntax) 与单元测试套件 (test)。
+# ==============================================================================
+version: '1.0'
+name: vibe-calendar-ci
+displayName: '代码质量与自动化验证'
+
+# 触发器配置：针对主分支提交和合并请求自动化运行
+triggers:
+  push:
+    branches:
+      include:
+        - main
+  pull_request:
+    branches:
+      include:
+        - main
+
+# 流水线阶段编排
+stages:
+  - stage:
+      name: verify_stage
+      displayName: '自动化校验阶段'
+      steps:
+        - step: build@nodejs
+          name: nodejs_verify_step
+          displayName: 'Node.js 语法校验与单元测试'
+          # 使用 LTS 版本的 Node.js
+          nodeVersion: 22.12.0
+          commands:
+            # 开启严格错误退出模式
+            - set -e
+            # 配置国内高速镜像，避免 CI 环境网络超时
+            - npm config set registry https://registry.npmmirror.com
+            # 安装依赖（忽略预构建可执行二进制脚本以大幅缩短安装耗时）
+            - npm ci --ignore-scripts
+            # 运行项目全量语法检查与核心业务单元测试
+            - npm run verify

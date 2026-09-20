@@ -96,6 +96,7 @@ npm run verify:full
 - `check:syntax` 使用 Node.js 解析项目 JavaScript，适合快速发现语法错误。
 - `npm test` 使用 Node.js 内置测试运行器，不启动 Electron 窗口。
 - `verify` 顺序执行上述两项，是提交和 Pull Request 前的最低要求。
+- `npm run clean` 自动清理本地残留的构建目录（`dist/`）与各类调试日志（`*.log`），保持工作树清爽。
 - `test:ui` 启动隐藏的真实 Electron 窗口，验证关键 DOM、Preload 和交互链路，不访问真实更新服务。
 - `test:update-network` 使用真实 GitHub Releases API 验证最新版本与手动检查，适合发布前联网执行，不放入离线 CI 的最低检查。
 - `verify:full` 串行执行单元、Electron 界面和真实更新网络检查，适合发布前在 Windows 上执行。

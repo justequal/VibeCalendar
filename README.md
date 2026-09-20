@@ -63,6 +63,7 @@ Preload 文件后，需要停止并重新启动开发命令。
 | `npm run check:syntax` | 检查项目 JavaScript 语法 |
 | `npm run verify` | 依次执行语法检查和全部测试 |
 | `npm run verify:full` | 在 `verify` 后追加真实 Electron 与联网更新冒烟测试 |
+| `npm run clean` | 自动化清理本地临时打包产物（dist/）与各类日志文件 |
 | `npm run pack` | 生成未安装的应用目录 |
 | `npm run build` | 在 `dist/` 生成 Windows NSIS 安装包和更新元数据 |
 
@@ -73,7 +74,9 @@ Preload 文件后，需要停止并重新启动开发命令。
 
 ```text
 VibeCalendar/
-├── .github/workflows/           # 持续集成与正式发布
+├── .github/workflows/           # GitHub Actions 持续集成与发布
+├── .workflow/                   # Gitee Go 自动化构建与代码校验流水线
+├── AGENTS.md                    # 代理协作规范与人类专属受保护区域定义
 ├── docs/
 │   ├── CODE_WALKTHROUGH.md      # 面向前端/Electron 初学者的代码阅读路线
 │   ├── ARCHITECTURE.md          # 模块边界、数据流和扩展约定
@@ -98,10 +101,12 @@ VibeCalendar/
 │   │   └── style.css            # 深色视觉系统与组件样式
 │   └── assets/                  # 应用和安装器图标
 ├── scripts/
+│   ├── clean.js                 # 跨平台构建产物与日志清理脚本
 │   ├── extract-release-notes.js # 从版本维护记录生成 Release 公告
 │   ├── ui-smoke.js              # 真实 Electron 界面冒烟测试
 │   └── update-network-smoke.js  # GitHub 更新服务联网冒烟测试
 ├── test/
+│   ├── clean.test.js            # 清理脚本单元测试
 │   ├── calendar-core.test.js    # 日期与节日本日计算
 │   ├── holiday-service.test.js  # 数据校验、缓存、并发与降级
 │   ├── interaction-core.test.js # 慢速/快速滚轮幅度换算
@@ -158,9 +163,13 @@ winget install Justequal.VibeCalendar
 
 ## 持续集成与发布
 
-- Pull Request：执行语法检查和单元测试。
-- 推送到 `main`：再次验证，并生成保留 7 天的 Windows 冒烟构建产物。
-- 推送与 `package.json` 版本一致的 `v*.*.*` 标签：构建正式安装包并创建 GitHub Release。
+- **双平台流水线支持**：
+  - **Gitee Go**：配置于 `.workflow/ci.yml` 与 `.workflow/MasterPipeline.yml`，在 Gitee 收到 Push / PR 时自动化运行 Node.js 22 语法检查与单元测试，国内环境高效稳定。
+  - **GitHub Actions**：保留于 `.github/workflows/build.yml` 与 `release.yml`，负责全量构建、Windows 冒烟测试以及正式版本发布。
+- **自动化流程规范**：
+  - Pull Request：执行语法检查与核心单元测试。
+  - 推送到 `main`：双端触发自动化质量验证；GitHub 端生成并保留 Windows 冒烟构建产物。
+  - 推送符合 `v*.*.*` 语义化标签：触发正式打包发布流程。
 
 普通的 `git push` 不会自动发布正式版本；只有向远端推送符合规则的版本标签才会触发 Release 工作流。完整操作和失败处理见 [发布指南](docs/RELEASING.md)。
 
